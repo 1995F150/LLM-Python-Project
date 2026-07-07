@@ -1,3 +1,5 @@
+import uuid
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from engine.agent import get_agent_response
@@ -11,28 +13,33 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="CriderGPT Engine")
 
 class ChatRequest(BaseModel):
-    text: str = None
-    message: str = None
-    user_id: str
-    conversation_id: str = None
+    text: Optional[str] = None
+    message: Optional[str] = None
+    user_id: Optional[str] = None
+    conversation_id: Optional[str] = None
 
 async def process_chat(request: ChatRequest):
     logger.info(f"Received request: message={request.message}, text={request.text}, user_id={request.user_id}, conversation_id={request.conversation_id}")
     
-    if not request.user_id:
-        raise HTTPException(status_code=400, detail="user_id is required")
-    
     actual_message = request.message if request.message else request.text
     if not actual_message:
         raise HTTPException(status_code=400, detail="Either 'text' or 'message' must be provided")
+        
+    conv_id = request.conversation_id or str(uuid.uuid4())
     
     try:
         response = get_agent_response(
             message=actual_message,
             user_id=request.user_id,
-            conversation_id=request.conversation_id
+            conversation_id=conv_id
         )
-        return {"response": response}
+        return {
+            "response": response,
+            "conversation_id": conv_id,
+            "user_id": request.user_id,
+            "model": "cridergpt-engine",
+            "memories_used": []
+        }
     except Exception as e:
         logger.error(f"Error processing chat: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -44,7 +51,3 @@ async def chat_with_ai(request: ChatRequest):
 @app.post("/chat")
 async def chat(request: ChatRequest):
     return await process_chat(request)
-
-@app.post("/export-memory")
-async def export_mem():
-    return export_memory()
