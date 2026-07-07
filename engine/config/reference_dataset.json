@@ -1,0 +1,12 @@
+{
+  "jessie_crider": [
+    "https://udpldrrpebdyuiqdtqnq.supabase.co/storage/v1/object/public/character-references/jessie-crider-reference-1.jpg"
+  ],
+  "sarah": [
+    "https://udpldrrpebdyuiqdtqnq.supabase.co/storage/v1/object/public/character-references/sarah-davis-reference-1.jpg",
+    "https://udpldrrpebdyuiqdtqnq.supabase.co/storage/v1/object/public/character-references/sarah-davis-reference-2.jpg"
+  ],
+  "dr_harman": [
+    "https://udpldrrpebdyuiqdtqnq.supabase.co/storage/v1/object/public/character-references/dr-harman-reference-1.png"
+  ]
+}
