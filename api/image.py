@@ -206,7 +206,7 @@ async def analyze_image(
         response = requests.post(
             f"{settings.ollama_base_url}/api/chat",
             json={
-                "model": request.model or settings.ollama_model,
+                "model": request.model or settings.ollama_vision_model,
                 "stream": False,
                 "messages": [
                     {"role": "user", "content": request.prompt, "images": [encoded]}
@@ -230,6 +230,6 @@ async def analyze_image(
     return {
         "response": description,
         "description": description,
-        "model": body.get("model") or request.model or settings.ollama_model,
+        "model": body.get("model") or request.model or settings.ollama_vision_model,
         "latency_ms": int((time.monotonic() - started) * 1000),
     }

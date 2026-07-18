@@ -15,7 +15,7 @@ Production FastAPI bridge between the CriderGPT Supabase Edge Functions and syst
 ## Required server services
 
 1. Python 3.11 or newer.
-2. Ollama listening locally (default `127.0.0.1:11434`) with the configured chat/vision model installed.
+2. Ollama listening locally (default `127.0.0.1:11434`) with both the configured chat and vision models installed.
 3. Automatic1111 or Forge started with its API enabled (default `127.0.0.1:7860`).
 4. Nginx with HTTPS in front of Uvicorn.
 

@@ -55,6 +55,7 @@ class Settings:
         "OLLAMA_BASE_URL", "http://127.0.0.1:11434"
     ).rstrip("/")
     ollama_model: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+    ollama_vision_model: str = os.getenv("OLLAMA_VISION_MODEL", "llava:7b")
     ollama_timeout_seconds: int = _int("OLLAMA_TIMEOUT_SECONDS", 120)
     default_temperature: float = _float("OLLAMA_TEMPERATURE", 0.7)
     default_max_tokens: int = _int("OLLAMA_MAX_TOKENS", 2000)
