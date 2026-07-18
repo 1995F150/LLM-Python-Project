@@ -1,35 +1,5 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from engine.agent import get_agent_response
-from memory.memory_exporter import export_memory
+"""Legacy ASGI entrypoint that re-exports the production application."""
 
-app = FastAPI(title="CriderGPT Engine")
+from app import app
 
-class Query(BaseModel):
-    text: str
-
-@app.post("/chat-with-ai")
-async def ask_agent(query: Query):
-    """Endpoint for the website/app to talk to the agent."""
-    try:
-        response = get_agent_response(query.text)
-        return {"response": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/sync-memory")
-async def sync_memory():
-    """Manual trigger to pull from Supabase and update local files."""
-    try:
-        export_memory()
-        return {"status": "Memory synced successfully from Supabase to local files."}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/")
-async def root():
-    return {"message": "CriderGPT Engine API is running."}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+__all__ = ["app"]

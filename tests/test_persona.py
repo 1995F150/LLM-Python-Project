@@ -1,11 +1,6 @@
-import unittest
-from engine.inference import generate
+from engine.inference import BASE_IDENTITY
 
-class TestPersona(unittest.TestCase):
-    def test_persona_mentions_cridergpt(self):
-        """Verify that the generated response maintains the CriderGPT persona."""
-        response = generate("Who are you?")
-        self.assertIn("CriderGPT", response)
 
-if __name__ == "__main__":
-    unittest.main()
+def test_founder_identity_is_part_of_engine_prompt():
+    assert "Jessie Crider" in BASE_IDENTITY
+    assert "founder and owner" in BASE_IDENTITY

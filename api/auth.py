@@ -1,25 +1,29 @@
-# API authentication and authorization
-from fastapi import APIRouter, Depends
+"""Header authentication shared by protected engine routes."""
 
-router = APIRouter()
+from __future__ import annotations
 
-async def verify_token(token: str):
-    """Verifies the provided authentication token."""
-    return True
+import hmac
+import logging
+
 from fastapi import Header, HTTPException, status
-from config import API_KEYS
 
-async def validate_api_key(x_api_key: str = Header(None)):
-    """
-    Dependency to validate the API key from request headers.
-    """
-    if not x_api_key or x_api_key not in API_KEYS:
+from config import settings
+
+logger = logging.getLogger(__name__)
+
+
+async def validate_api_key(x_api_key: str | None = Header(default=None)) -> str:
+    if not settings.api_keys:
+        logger.error("No engine API key is configured")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Engine authentication is not configured",
+        )
+    if not x_api_key or not any(
+        hmac.compare_digest(x_api_key, key) for key in settings.api_keys
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing API Key",
+            detail="Invalid or missing API key",
         )
     return x_api_key
-@router.get("/auth/verify")
-async def check_auth(is_valid: bool = Depends(verify_token)):
-    """Validates authentication state via the API."""
-    return {"authenticated": is_valid}

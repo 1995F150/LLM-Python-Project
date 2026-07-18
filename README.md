@@ -1,21 +1,74 @@
 # CriderGPT Engine
 
-FastAPI backend for AI-driven chat with memory persistence.
+Production FastAPI bridge between the CriderGPT Supabase Edge Functions and system-level AI services on the GPU server. It does not use Docker.
 
-## API Usage
+## What it does
 
-### Chat with AI
-`POST /chat-with-ai`
+- Receives the exact `/chat`, `/image/generate`, and `/image/analyze` contracts used by the `chat-with-ai` Edge Function.
+- Generates chat responses through Ollama.
+- Loads bounded context from `writing_samples`, `ai_memory`, `user_preferences`, `profiles`, `chat_messages`, `training_inputs`, and `cridergpt_training_corpus`.
+- Keeps user memory scoped to the supplied authenticated Supabase `user_id`.
+- Recognizes Jessie Crider as CriderGPT's founder while still keeping authorization separate from identity context.
+- Generates images through a local Automatic1111-compatible API (Automatic1111 or Forge) and can attach trusted Supabase character-reference images.
+- Analyzes images through an Ollama vision-capable model.
 
-Example Request Payload:
+## Required server services
+
+1. Python 3.11 or newer.
+2. Ollama listening locally (default `127.0.0.1:11434`) with the configured chat/vision model installed.
+3. Automatic1111 or Forge started with its API enabled (default `127.0.0.1:7860`).
+4. Nginx with HTTPS in front of Uvicorn.
+
+## Installation
+
+```bash
+sudo bash deployment/install.sh
+sudo nano /opt/cridergpt-engine/.env
+sudo systemctl restart cridergpt-engine
+curl http://127.0.0.1:8000/health
+```
+
+The installer deliberately stops the first time it creates `.env`; configure it before starting the service. Never put actual secrets in Git.
+
+The value in `CRIDERGPT_ENGINE_API_KEY` must match the Supabase Edge Function secret with the same name. The plural `CRIDERGPT_ENGINE_API_KEYS` is also accepted for key rotation. The public HTTPS origin must be stored in the Edge Function secret `CRIDERGPT_ENGINE_URL` without an extra path suffix.
+
+## API
+
+All generation routes require `X-API-Key`. `/health` is intentionally non-secret and reports dependency readiness without revealing credentials.
+
+- `POST /chat`
+- `POST /chat-with-ai` (compatibility alias)
+- `POST /image/generate`
+- `POST /image/analyze`
+- `/api/...` compatibility aliases for older clients
+
+Example chat body:
+
 ```json
 {
-  "message": "Hello, how are you?",
-  "user_id": "user_12345",
-  "conversation_id": "conv_67890"
+  "message": "Hello",
+  "system_prompt": "Context assembled by the Supabase Edge Function",
+  "conversation_history": [],
+  "user_id": null,
+  "conversation_id": null,
+  "model": null,
+  "temperature": 0.7,
+  "max_tokens": 2000
 }
 ```
 
-### Chat (Alternative)
-`POST /chat`
-Accepts the same payload as `/chat-with-ai`.
+## Validation
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/ruff check .
+.venv/bin/pytest -q
+```
+
+## Updating
+
+```bash
+sudo bash /opt/cridergpt-engine/deployment/update.sh
+journalctl -u cridergpt-engine -n 100 --no-pager
+```
