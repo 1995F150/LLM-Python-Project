@@ -20,5 +20,9 @@ if [ "$ENV_CHECKSUM_BEFORE" != "$ENV_CHECKSUM_AFTER" ]; then
   exit 1
 fi
 
+sudo install -o root -g root -m 0644 \
+  "$DEST_DIR/deployment/cridergpt-engine.service" \
+  /etc/systemd/system/cridergpt-engine.service
+sudo systemctl daemon-reload
 sudo systemctl restart cridergpt-engine.service
 curl --fail --silent http://127.0.0.1:8000/health
